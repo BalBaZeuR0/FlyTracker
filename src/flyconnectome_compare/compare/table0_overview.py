@@ -44,6 +44,7 @@ def _plot_overview_bars(table: pd.DataFrame, path: Path) -> None:
     axes[1].set_title("Null-modele göre modülerlik")
 
     for ax in axes:
+        ax.set_xticks(range(len(table)))
         ax.set_xticklabels([DATASET_LABELS[d] for d in table["dataset"]], rotation=30, ha="right", fontsize=8)
 
     fig.suptitle("Tablo 0 — 5 dataset'in yapısal genel bakışı (bağlamsal, cinsiyet iddiası yok)")
