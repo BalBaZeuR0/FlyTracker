@@ -17,9 +17,9 @@ DATASET_LABELS = {"banc": "BANC (dişi, tüm CNS)", "mcns": "MCNS (erkek, tüm C
 DATASET_COLORS = {"banc": "#2a78d6", "mcns": "#eb6834"}
 
 
-def _load_filtered_edges(data_dir: Path, dataset: str) -> pd.DataFrame:
+def _load_filtered_edges(data_dir: Path, dataset: str, min_syn_count: int) -> pd.DataFrame:
     edges = load_edges(data_dir, dataset)
-    edges = filter_by_synapse_count(edges, MIN_SYN_COUNT)
+    edges = filter_by_synapse_count(edges, min_syn_count)
     return aggregate_edges(edges)
 
 
@@ -136,13 +136,15 @@ def _plot_class_breakdown(class_table: pd.DataFrame, path: Path) -> None:
     plt.close(fig)
 
 
-def run_axis1(data_dir: Path, output_dir: Path, n_randomizations: int = 3, seed: int = 0) -> dict:
+def run_axis1(
+    data_dir: Path, output_dir: Path, n_randomizations: int = 3, seed: int = 0, min_syn_count: int = MIN_SYN_COUNT
+) -> dict:
     tables_dir = output_dir / "tables"
     figures_dir = output_dir / "figures"
     tables_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
 
-    edges_by_dataset = {ds: _load_filtered_edges(data_dir, ds) for ds in DATASETS}
+    edges_by_dataset = {ds: _load_filtered_edges(data_dir, ds, min_syn_count) for ds in DATASETS}
     neurons_by_dataset = {ds: load_neurons(data_dir, ds) for ds in DATASETS}
     graphs = {ds: build_graph(edges) for ds, edges in edges_by_dataset.items()}
 
@@ -157,6 +159,8 @@ def run_axis1(data_dir: Path, output_dir: Path, n_randomizations: int = 3, seed:
         global_rows.append(
             {
                 "dataset": dataset,
+                "min_syn_count": min_syn_count,
+                "n_randomizations": n_randomizations,
                 "n_neurons_with_edges": graph.number_of_nodes(),
                 "n_edges": graph.number_of_edges(),
                 "density": nx.density(graph),
