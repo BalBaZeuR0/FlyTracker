@@ -5,6 +5,7 @@ import pytest
 from flyconnectome_compare import DATASETS
 from flyconnectome_compare.graph.build import build_graph
 from flyconnectome_compare.io.loaders import UNIFIED_NEURON_COLUMNS, load_edges, load_neurons
+from flyconnectome_compare.taxonomy import CANONICAL_SUPER_CLASSES
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
@@ -21,6 +22,13 @@ def test_load_neurons(dataset):
     neurons = load_neurons(DATA_DIR, dataset)
     assert not neurons.empty
     assert list(neurons.columns) == UNIFIED_NEURON_COLUMNS
+
+
+@pytest.mark.parametrize("dataset", DATASETS)
+def test_super_class_canonicalization_covers_all_values(dataset):
+    neurons = load_neurons(DATA_DIR, dataset)
+    observed = set(neurons["super_class"].dropna().unique())
+    assert observed <= set(CANONICAL_SUPER_CLASSES)
 
 
 def test_build_graph():
