@@ -91,6 +91,26 @@ def _plot_count_scatter(count_table: pd.DataFrame, path: Path) -> None:
     plt.close(fig)
 
 
+def _plot_type_coverage(coverage: dict, path: Path) -> None:
+    apply_style()
+    fig, ax = plt.subplots(figsize=(6.5, 3.5))
+    segments = [
+        ("Sadece FAFB", coverage["n_types_only_fafb"], DATASET_COLORS["fafb"]),
+        ("Ortak", coverage["n_types_shared"], "#898781"),
+        ("Sadece MAOL", coverage["n_types_only_maol"], DATASET_COLORS["maol"]),
+    ]
+    left = 0
+    for label, value, color in segments:
+        ax.barh(["Hücre tipi kapsama"], [value], left=left, color=color, label=f"{label} ({value})")
+        left += value
+    ax.set_xlabel("Benzersiz hücre tipi sayısı")
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.35), ncol=3, fontsize=8)
+    fig.suptitle(f"Axis 2 — Hücre tipi kapsaması (Jaccard={coverage['jaccard']:.2f})")
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+
+
 def _plot_synapse_scatter(synapse_table: pd.DataFrame, rho: float, path: Path) -> None:
     apply_style()
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -130,6 +150,7 @@ def run_axis2(data_dir: Path, output_dir: Path) -> dict:
     synapse_table.to_csv(tables_dir / "axis2_type_synapse_totals.csv")
     synapse_rho, _ = stats.spearmanr(synapse_table["fafb"], synapse_table["maol"])
 
+    _plot_type_coverage(coverage, figures_dir / "axis2_type_coverage.png")
     _plot_count_ratio(count_table, figures_dir / "axis2_type_count_ratio.png")
     _plot_count_scatter(count_table, figures_dir / "axis2_type_count_scatter.png")
     _plot_synapse_scatter(synapse_table, synapse_rho, figures_dir / "axis2_type_synapse_scatter.png")

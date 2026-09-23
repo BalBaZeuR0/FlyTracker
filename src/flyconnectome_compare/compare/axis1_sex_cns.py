@@ -17,6 +17,50 @@ DATASET_LABELS = {"banc": "BANC (dişi, tüm CNS)", "mcns": "MCNS (erkek, tüm C
 DATASET_COLORS = {"banc": "#2a78d6", "mcns": "#eb6834"}
 
 
+def plot_modularity_headline(global_table: pd.DataFrame, path: Path) -> None:
+    apply_style()
+    fig, ax = plt.subplots(figsize=(6.5, 5))
+    positions = list(range(len(global_table)))
+    width = 0.35
+    colors = [DATASET_COLORS[d] for d in global_table["dataset"]]
+    ax.bar(
+        [p - width / 2 for p in positions], global_table["modularity_null_mean"], width=width,
+        yerr=global_table["modularity_null_std"], capsize=4, color="#c3c2b7",
+        label="Null model (rastgele, ort.±std)",
+    )
+    ax.bar(
+        [p + width / 2 for p in positions], global_table["modularity_observed"], width=width,
+        color=colors, label="Gözlenen (gerçek ağ)",
+    )
+    ax.set_xticks(positions)
+    ax.set_xticklabels([DATASET_LABELS[d] for d in global_table["dataset"]])
+    ax.set_ylabel("Modülerlik")
+    ax.legend(frameon=False)
+    fig.suptitle("Axis 1 — Ana bulgu: gözlenen modülerlik vs null model")
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+
+
+def plot_sensitivity(sensitivity_table: pd.DataFrame, path: Path) -> None:
+    apply_style()
+    fig, ax = plt.subplots(figsize=(6.5, 5))
+    for dataset in DATASETS:
+        subset = sensitivity_table[sensitivity_table["dataset"] == dataset].sort_values("min_syn_count")
+        ax.plot(
+            subset["min_syn_count"], subset["modularity_ratio"], marker="o", markersize=7,
+            color=DATASET_COLORS[dataset], linewidth=2, label=DATASET_LABELS[dataset],
+        )
+    ax.set_xticks(sorted(sensitivity_table["min_syn_count"].unique()))
+    ax.set_xlabel("syn_count eşiği")
+    ax.set_ylabel("Modülerlik oranı (gözlenen/null)")
+    ax.legend(frameon=False)
+    fig.suptitle("Axis 1 — Eşik-duyarlılık: sıralama her eşikte korunuyor")
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+
+
 def _class_level_breakdown(edges_by_dataset: dict, neurons_by_dataset: dict) -> pd.DataFrame:
     tables = []
     for dataset, edges in edges_by_dataset.items():
