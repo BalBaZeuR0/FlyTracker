@@ -82,6 +82,31 @@ def _plot_rich_club(rich_club_frames: dict, path: Path) -> None:
     plt.close(fig)
 
 
+def _class_density_ratio(class_table: pd.DataFrame) -> pd.DataFrame:
+    """Whether the global density gap between datasets is uniform across cell classes, or
+    concentrated in specific ones — a category with a much larger gap than the global ratio
+    points at a reconstruction-completeness difference in that region, not a whole-brain effect."""
+    totals = class_table.groupby(["dataset", "source_class"])["n_edges"].sum().unstack("dataset")
+    totals = totals[(totals.get("banc", 0) > 0) & (totals.get("mcns", 0) > 0)]
+    ratio = (totals["mcns"] / totals["banc"]).rename("ratio_mcns_banc")
+    return pd.concat([totals, ratio], axis=1).sort_values("ratio_mcns_banc", ascending=False).reset_index()
+
+
+def _plot_class_ratio(ratio_table: pd.DataFrame, global_ratio: float, path: Path) -> None:
+    apply_style()
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.barh(ratio_table["source_class"], ratio_table["ratio_mcns_banc"], color="#4a3aa7")
+    ax.axvline(global_ratio, color="#898781", linewidth=1.5, linestyle="--")
+    ax.text(
+        global_ratio, -0.6, f" global oran {global_ratio:.2f}x", color="#898781", fontsize=8, va="top",
+    )
+    ax.set_xlabel("Yoğunluk oranı (MCNS / BANC)")
+    fig.suptitle("Axis 1 — Sınıf başına yoğunluk oranı, global orana kıyasla")
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+
+
 def _plot_class_breakdown(class_table: pd.DataFrame, path: Path) -> None:
     apply_style()
     class_table = class_table[
@@ -153,8 +178,18 @@ def run_axis1(data_dir: Path, output_dir: Path, n_randomizations: int = 3, seed:
     class_table = _class_level_breakdown(edges_by_dataset, neurons_by_dataset)
     class_table.to_csv(tables_dir / "axis1_class_breakdown.csv", index=False)
 
+    ratio_table = _class_density_ratio(class_table)
+    ratio_table.to_csv(tables_dir / "axis1_class_density_ratio.csv", index=False)
+    global_ratio = global_table.set_index("dataset").loc["mcns", "density"] / global_table.set_index("dataset").loc["banc", "density"]
+
     _plot_degree_distributions(degree_frames, figures_dir / "axis1_degree_distribution.png")
     _plot_rich_club(rich_club_frames, figures_dir / "axis1_rich_club.png")
     _plot_class_breakdown(class_table, figures_dir / "axis1_class_breakdown.png")
+    _plot_class_ratio(ratio_table, global_ratio, figures_dir / "axis1_class_ratio.png")
 
-    return {"global_table": global_table, "class_table": class_table, "rich_club": rich_club_frames}
+    return {
+        "global_table": global_table,
+        "class_table": class_table,
+        "ratio_table": ratio_table,
+        "rich_club": rich_club_frames,
+    }
