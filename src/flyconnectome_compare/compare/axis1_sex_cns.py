@@ -6,21 +6,15 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
 
-from flyconnectome_compare.graph.build import aggregate_edges, build_graph
+from flyconnectome_compare.graph.build import build_graph, load_filtered_aggregated_edges
 from flyconnectome_compare.graph.stats import degree_summary, modularity_with_null, rich_club_with_null
-from flyconnectome_compare.io.loaders import filter_by_synapse_count, load_edges, load_neurons
+from flyconnectome_compare.io.loaders import load_neurons
 from flyconnectome_compare.viz import apply_style
 
 MIN_SYN_COUNT = 5
 DATASETS = ("banc", "mcns")
 DATASET_LABELS = {"banc": "BANC (dişi, tüm CNS)", "mcns": "MCNS (erkek, tüm CNS)"}
 DATASET_COLORS = {"banc": "#2a78d6", "mcns": "#eb6834"}
-
-
-def _load_filtered_edges(data_dir: Path, dataset: str, min_syn_count: int) -> pd.DataFrame:
-    edges = load_edges(data_dir, dataset)
-    edges = filter_by_synapse_count(edges, min_syn_count)
-    return aggregate_edges(edges)
 
 
 def _class_level_breakdown(edges_by_dataset: dict, neurons_by_dataset: dict) -> pd.DataFrame:
@@ -144,7 +138,7 @@ def run_axis1(
     tables_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
 
-    edges_by_dataset = {ds: _load_filtered_edges(data_dir, ds, min_syn_count) for ds in DATASETS}
+    edges_by_dataset = {ds: load_filtered_aggregated_edges(data_dir, ds, min_syn_count) for ds in DATASETS}
     neurons_by_dataset = {ds: load_neurons(data_dir, ds) for ds in DATASETS}
     graphs = {ds: build_graph(edges) for ds, edges in edges_by_dataset.items()}
 

@@ -1,5 +1,15 @@
+from pathlib import Path
+
 import networkx as nx
 import pandas as pd
+
+from flyconnectome_compare.io.loaders import filter_by_synapse_count, load_edges
+
+
+def load_filtered_aggregated_edges(data_dir: Path, dataset: str, min_syn_count: int) -> pd.DataFrame:
+    edges = load_edges(data_dir, dataset)
+    edges = filter_by_synapse_count(edges, min_syn_count)
+    return aggregate_edges(edges)
 
 
 def aggregate_edges(edges: pd.DataFrame) -> pd.DataFrame:
