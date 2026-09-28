@@ -13,7 +13,7 @@ from flyconnectome_compare.viz import apply_style
 
 OPTIC_SUPER_CLASSES = ("optic_lobe_intrinsic", "visual_projection", "visual_centrifugal")
 DATASETS = ("fafb", "maol")
-DATASET_LABELS = {"fafb": "FAFB (görsel lob kısmı)", "maol": "MAOL (dedike görsel lob)"}
+DATASET_LABELS = {"fafb": "FAFB (optic-lobe portion)", "maol": "MAOL (dedicated optic lobe)"}
 DATASET_COLORS = {"fafb": "#2a78d6", "maol": "#4a3aa7"}
 
 
@@ -64,8 +64,8 @@ def _plot_count_ratio(count_table: pd.DataFrame, path: Path, top_n: int = 25) ->
     ax.barh(subset["cell_type"], subset["ratio_maol_fafb"], color="#4a3aa7")
     ax.axvline(1.0, color="#898781", linewidth=1.5, linestyle="--")
     ax.set_xscale("log")
-    ax.set_xlabel("Nöron sayısı oranı (MAOL / FAFB), log ölçek")
-    fig.suptitle("Axis 2 — Ortak hücre tiplerinde sayı oranı (en uç 2x25 tip)")
+    ax.set_xlabel("Neuron count ratio (MAOL / FAFB), log scale")
+    fig.suptitle("Axis 2 — Count ratio for shared cell types (top/bottom 25)")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -81,11 +81,11 @@ def _plot_count_scatter(count_table: pd.DataFrame, path: Path) -> None:
     ax.set_yscale("log")
     ax.set_xlim(lim)
     ax.set_ylim(lim)
-    ax.set_xlabel("FAFB'de nöron sayısı (log)")
-    ax.set_ylabel("MAOL'de nöron sayısı (log)")
+    ax.set_xlabel("Neuron count in FAFB (log)")
+    ax.set_ylabel("Neuron count in MAOL (log)")
     rho, _ = stats.spearmanr(count_table["fafb"], count_table["maol"])
     ax.text(0.05, 0.95, f"Spearman ρ = {rho:.2f}", transform=ax.transAxes, va="top")
-    fig.suptitle("Axis 2 — Ortak hücre tiplerinde nöron sayısı tutarlılığı")
+    fig.suptitle("Axis 2 — Neuron-count consistency for shared cell types")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -95,17 +95,17 @@ def _plot_type_coverage(coverage: dict, path: Path) -> None:
     apply_style()
     fig, ax = plt.subplots(figsize=(6.5, 3.5))
     segments = [
-        ("Sadece FAFB", coverage["n_types_only_fafb"], DATASET_COLORS["fafb"]),
-        ("Ortak", coverage["n_types_shared"], "#898781"),
-        ("Sadece MAOL", coverage["n_types_only_maol"], DATASET_COLORS["maol"]),
+        ("FAFB only", coverage["n_types_only_fafb"], DATASET_COLORS["fafb"]),
+        ("Shared", coverage["n_types_shared"], "#898781"),
+        ("MAOL only", coverage["n_types_only_maol"], DATASET_COLORS["maol"]),
     ]
     left = 0
     for label, value, color in segments:
-        ax.barh(["Hücre tipi kapsama"], [value], left=left, color=color, label=f"{label} ({value})")
+        ax.barh(["Cell type coverage"], [value], left=left, color=color, label=f"{label} ({value})")
         left += value
-    ax.set_xlabel("Benzersiz hücre tipi sayısı")
+    ax.set_xlabel("Number of unique cell types")
     ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.35), ncol=3, fontsize=8)
-    fig.suptitle(f"Axis 2 — Hücre tipi kapsaması (Jaccard={coverage['jaccard']:.2f})")
+    fig.suptitle(f"Axis 2 — Cell type coverage (Jaccard={coverage['jaccard']:.2f})")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -121,10 +121,10 @@ def _plot_synapse_scatter(synapse_table: pd.DataFrame, rho: float, path: Path) -
     ax.set_yscale("log")
     ax.set_xlim(lim)
     ax.set_ylim(lim)
-    ax.set_xlabel("FAFB'de toplam sinaps sayısı, tip başına (log)")
-    ax.set_ylabel("MAOL'de toplam sinaps sayısı, tip başına (log)")
+    ax.set_xlabel("Total synapse count in FAFB, per type (log)")
+    ax.set_ylabel("Total synapse count in MAOL, per type (log)")
     ax.text(0.05, 0.95, f"Spearman ρ = {rho:.2f}", transform=ax.transAxes, va="top")
-    fig.suptitle("Axis 2 — Ortak hücre tiplerinde bağlantı-gücü tutarlılığı")
+    fig.suptitle("Axis 2 — Connection-strength consistency for shared cell types")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)

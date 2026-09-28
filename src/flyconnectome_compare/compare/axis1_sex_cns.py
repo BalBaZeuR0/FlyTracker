@@ -13,7 +13,7 @@ from flyconnectome_compare.viz import apply_style
 
 MIN_SYN_COUNT = 5
 DATASETS = ("banc", "mcns")
-DATASET_LABELS = {"banc": "BANC (dişi, tüm CNS)", "mcns": "MCNS (erkek, tüm CNS)"}
+DATASET_LABELS = {"banc": "BANC (female, whole CNS)", "mcns": "MCNS (male, whole CNS)"}
 DATASET_COLORS = {"banc": "#2a78d6", "mcns": "#eb6834"}
 
 
@@ -26,17 +26,17 @@ def plot_modularity_headline(global_table: pd.DataFrame, path: Path) -> None:
     ax.bar(
         [p - width / 2 for p in positions], global_table["modularity_null_mean"], width=width,
         yerr=global_table["modularity_null_std"], capsize=4, color="#c3c2b7",
-        label="Null model (rastgele, ort.±std)",
+        label="Null model (random, mean±std)",
     )
     ax.bar(
         [p + width / 2 for p in positions], global_table["modularity_observed"], width=width,
-        color=colors, label="Gözlenen (gerçek ağ)",
+        color=colors, label="Observed (real network)",
     )
     ax.set_xticks(positions)
     ax.set_xticklabels([DATASET_LABELS[d] for d in global_table["dataset"]])
-    ax.set_ylabel("Modülerlik")
+    ax.set_ylabel("Modularity")
     ax.legend(frameon=False)
-    fig.suptitle("Axis 1 — Ana bulgu: gözlenen modülerlik vs null model")
+    fig.suptitle("Axis 1 — Headline finding: observed modularity vs null model")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -52,10 +52,10 @@ def plot_sensitivity(sensitivity_table: pd.DataFrame, path: Path) -> None:
             color=DATASET_COLORS[dataset], linewidth=2, label=DATASET_LABELS[dataset],
         )
     ax.set_xticks(sorted(sensitivity_table["min_syn_count"].unique()))
-    ax.set_xlabel("syn_count eşiği")
-    ax.set_ylabel("Modülerlik oranı (gözlenen/null)")
+    ax.set_xlabel("syn_count threshold")
+    ax.set_ylabel("Modularity ratio (observed/null)")
     ax.legend(frameon=False)
-    fig.suptitle("Axis 1 — Eşik-duyarlılık: sıralama her eşikte korunuyor")
+    fig.suptitle("Axis 1 — Threshold sensitivity: ranking holds at every threshold")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -89,9 +89,9 @@ def _plot_degree_distributions(degree_frames: dict, path: Path) -> None:
             )
         ax.set_xlabel(title)
         ax.set_xscale("log")
-    axes[0].set_ylabel("Nöron sayısı (log)")
+    axes[0].set_ylabel("Number of neurons (log)")
     axes[0].legend(frameon=False, fontsize=8)
-    fig.suptitle("Axis 1 — Derece dağılımı: BANC vs MCNS")
+    fig.suptitle("Axis 1 — Degree distribution: BANC vs MCNS")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -102,19 +102,19 @@ def _plot_rich_club(rich_club_frames: dict, path: Path) -> None:
     fig, ax = plt.subplots(figsize=(6.5, 4.5))
     for dataset, table in rich_club_frames.items():
         color = DATASET_COLORS[dataset]
-        ax.plot(table["k"], table["observed"], color=color, linewidth=2, label=f"{DATASET_LABELS[dataset]} — gözlenen")
+        ax.plot(table["k"], table["observed"], color=color, linewidth=2, label=f"{DATASET_LABELS[dataset]} — observed")
         ax.plot(
             table["k"], table["null_mean"], color=color, linewidth=1, linestyle="--", alpha=0.6,
-            label=f"{DATASET_LABELS[dataset]} — null ort.",
+            label=f"{DATASET_LABELS[dataset]} — null mean",
         )
         ax.fill_between(
             table["k"], table["null_mean"] - table["null_std"], table["null_mean"] + table["null_std"],
             color=color, alpha=0.12,
         )
-    ax.set_xlabel("Derece eşiği (k)")
-    ax.set_ylabel("Rich-club katsayısı")
+    ax.set_xlabel("Degree threshold (k)")
+    ax.set_ylabel("Rich-club coefficient")
     ax.legend(frameon=False, fontsize=7)
-    fig.suptitle("Axis 1 — Rich-club: gözlenen vs derece-korumalı null model")
+    fig.suptitle("Axis 1 — Rich-club: observed vs degree-preserving null model")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -136,10 +136,10 @@ def _plot_class_ratio(ratio_table: pd.DataFrame, global_ratio: float, path: Path
     ax.barh(ratio_table["source_class"], ratio_table["ratio_mcns_banc"], color="#4a3aa7")
     ax.axvline(global_ratio, color="#898781", linewidth=1.5, linestyle="--")
     ax.text(
-        global_ratio, -0.6, f" global oran {global_ratio:.2f}x", color="#898781", fontsize=8, va="top",
+        global_ratio, -0.6, f" global ratio {global_ratio:.2f}x", color="#898781", fontsize=8, va="top",
     )
-    ax.set_xlabel("Yoğunluk oranı (MCNS / BANC)")
-    fig.suptitle("Axis 1 — Sınıf başına yoğunluk oranı, global orana kıyasla")
+    ax.set_xlabel("Density ratio (MCNS / BANC)")
+    fig.suptitle("Axis 1 — Per-class density ratio, versus the global ratio")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -166,9 +166,9 @@ def _plot_class_breakdown(class_table: pd.DataFrame, path: Path) -> None:
     )
     ax.set_yticks(list(positions))
     ax.set_yticklabels(pivot.index)
-    ax.set_xlabel("Kaynak sınıftan giden bağlantı sayısı")
+    ax.set_xlabel("Outgoing connections from source class")
     ax.legend(frameon=False)
-    fig.suptitle("Axis 1 — Super Class bazlı çıkan bağlantı sayısı")
+    fig.suptitle("Axis 1 — Outgoing connections by Super Class")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)

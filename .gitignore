@@ -8,3 +8,7 @@ __pycache__/
 data/
 outputs/
 caches/
+
+# generated reports — regenerate from the code + outputs/ rather than committing
+*.docx
+*.pdf

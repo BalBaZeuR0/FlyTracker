@@ -15,11 +15,11 @@ from flyconnectome_compare.viz import apply_style
 
 DATASETS = ("fafb", "banc", "manc", "maol", "mcns")
 DATASET_LABELS = {
-    "fafb": "FAFB (dişi, merkezi beyin)",
-    "banc": "BANC (dişi, tüm CNS)",
-    "manc": "MANC (erkek, VNC)",
-    "maol": "MAOL (erkek, görsel lob)",
-    "mcns": "MCNS (erkek, tüm CNS)",
+    "fafb": "FAFB (female, central brain)",
+    "banc": "BANC (female, whole CNS)",
+    "manc": "MANC (male, VNC)",
+    "maol": "MAOL (male, optic lobe)",
+    "mcns": "MCNS (male, whole CNS)",
 }
 DATASET_COLORS = {
     "fafb": "#2a78d6",
@@ -36,18 +36,18 @@ def _plot_overview_bars(table: pd.DataFrame, path: Path) -> None:
     colors = [DATASET_COLORS[d] for d in table["dataset"]]
 
     axes[0].bar(table["dataset"], table["density"], color=colors)
-    axes[0].set_ylabel("Yoğunluk")
-    axes[0].set_title("Ağ yoğunluğu")
+    axes[0].set_ylabel("Density")
+    axes[0].set_title("Network density")
 
     axes[1].bar(table["dataset"], table["modularity_ratio"], color=colors)
-    axes[1].set_ylabel("Modülerlik oranı (gözlenen/null)")
-    axes[1].set_title("Null-modele göre modülerlik")
+    axes[1].set_ylabel("Modularity ratio (observed/null)")
+    axes[1].set_title("Modularity vs null model")
 
     for ax in axes:
         ax.set_xticks(range(len(table)))
         ax.set_xticklabels([DATASET_LABELS[d] for d in table["dataset"]], rotation=30, ha="right", fontsize=8)
 
-    fig.suptitle("Tablo 0 — 5 dataset'in yapısal genel bakışı (bağlamsal, cinsiyet iddiası yok)")
+    fig.suptitle("Table 0 — Structural overview of all 5 datasets (contextual, no sex-difference claim)")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -58,10 +58,10 @@ def _plot_rich_club_all(rich_club_frames: dict, path: Path) -> None:
     fig, ax = plt.subplots(figsize=(7, 5))
     for dataset, table in rich_club_frames.items():
         ax.plot(table["k"], table["observed"], color=DATASET_COLORS[dataset], linewidth=2, label=DATASET_LABELS[dataset])
-    ax.set_xlabel("Derece eşiği (k)")
-    ax.set_ylabel("Rich-club katsayısı (gözlenen)")
+    ax.set_xlabel("Degree threshold (k)")
+    ax.set_ylabel("Rich-club coefficient (observed)")
     ax.legend(frameon=False, fontsize=7)
-    fig.suptitle("Tablo 0 — 5 dataset'te rich-club eğrisi")
+    fig.suptitle("Table 0 — Rich-club curve across all 5 datasets")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
