@@ -1,0 +1,19 @@
+{
+  "title": "FlyConnectome Compare — analiz akışı",
+  "nodes": {
+    "codex":  {"label": "FlyWire Codex indirmeleri\nFAFB · BANC · MANC · MAOL · MCNS", "pos": [0, 0], "kind": "data", "w": 3.6},
+    "load":   {"label": "io/loaders — ortak nöron şeması\n(root_id, super_class, cell_type …)", "pos": [0, 1.6], "kind": "process", "w": 3.6},
+    "tax":    {"label": "taxonomy\nSuper Class adlarını\ntek sınıflamaya eşle", "pos": [-2.6, 3.4], "kind": "process", "w": 2.6, "h": 1.15},
+    "graph":  {"label": "graph/build\nsyn_count ≥ 5 filtresi,\nyönlü ağ (networkx)", "pos": [2.0, 3.4], "kind": "process", "w": 2.6, "h": 1.15},
+    "null":   {"label": "Louvain modülerlik + rich-club\nvs derece korumalı\nnull modeller", "pos": [2.0, 5.2], "kind": "model", "w": 2.9, "h": 1.15},
+    "a2":     {"label": "Eksen 2\nFAFB optik lob vs MAOL\nhücre tipi eşleme, Spearman ρ", "pos": [-3.6, 7.2], "kind": "output", "w": 2.9, "h": 1.15},
+    "t0":     {"label": "Tablo 0\n5 veri setinin\nyapısal özeti", "pos": [0, 7.2], "kind": "output", "w": 2.6, "h": 1.15},
+    "a1":     {"label": "Eksen 1\nBANC vs MCNS (tüm CNS)\nsınıf bazlı yoğunluk oranı", "pos": [3.6, 7.2], "kind": "output", "w": 2.9, "h": 1.15}
+  },
+  "edges": [
+    ["codex", "load"], ["load", "tax"], ["load", "graph"], ["tax", "graph", "sınıf etiketleri"],
+    ["graph", "null"], ["null", "t0"], ["null", "a1"],
+    ["tax", "a2", "hücre tipi adları"]
+  ],
+  "groups": [{"label": "Ağır hesap: noron (28 çekirdek)", "nodes": ["graph", "null"], "label_at": "top-right"}]
+}
