@@ -12,6 +12,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+hero = ["flybrains>=0.6"]   # scripts/make_hero.py (README image)
 
 [build-system]
 requires = ["setuptools>=68"]
